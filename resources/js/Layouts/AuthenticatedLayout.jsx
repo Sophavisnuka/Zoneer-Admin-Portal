@@ -1,20 +1,19 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminSidebar from './AdminSidebar';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ header, children, title }) {
     const user = usePage().props.auth.user;
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { props, component } = usePage();
+    const pageTitle = title ?? props?.title ?? component?.split("/").pop() ?? "Admin";
 
     return (
         <div className="min-h-screen bg-gray-100 flex">
-            <AdminSidebar activeKey="dashboard" onNavigate={(k) => console.log(k)} />
+            <AdminSidebar />
             <div className='w-full'>
                 <nav className="border-b border-gray-100 bg-white">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -22,18 +21,13 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="flex">
                                 <div className="flex shrink-0 items-center">
                                     <Link href="/">
-                                        {/* <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" /> */}
                                         Property<span className="text-red-500"> Admin</span>
                                     </Link>
                                 </div>
-
-                                <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                    <NavLink
-                                        href={route('dashboard')}
-                                        active={route().current('dashboard')}
-                                    >
-                                        Dashboard
-                                    </NavLink>
+                                <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                                    <div className="text-sm font-semibold text-gray-700">
+                                        {pageTitle}
+                                    </div>
                                 </div>
                             </div>
                             <div className="hidden sm:ms-6 sm:flex sm:items-center">

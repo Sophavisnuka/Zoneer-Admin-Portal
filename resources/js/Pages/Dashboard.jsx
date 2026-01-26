@@ -2,6 +2,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import StatCard from "@/Components/Dashboard/StatCard";
 import { Users, User, House, MessageCircle, Timer } from "lucide-react";
+import { useEffect } from "react";
+import { router, usePage } from "@inertiajs/react";
+
 
 function StatusBadge({ status }) {
     const map = {
@@ -24,10 +27,22 @@ function StatusBadge({ status }) {
     );
 }
 
-export default function Dashboard(props) {
-    const stats = [
-        { label: "Total Landlords", value: 0, icon: Users },
-        { label: "Total Tenants", value: 0, icon: User },
+export default function Dashboard() {
+    const { stats } = usePage().props;
+    const refreshStats = () => {
+        router.reload({
+            only: ["stats"],
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+    useEffect(() => {
+        const interval = setInterval(refreshStats, 5000);
+        return () => clearInterval(interval);
+    }, []);
+    const card = [
+        { label: "Total Landlords", value: stats?.landlords ?? 0, icon: Users },
+        { label: "Total Tenants", value: stats?.tenants ?? 0, icon: User },
         { label: "Total Properties", value: 0, icon: House },
         { label: "New Inquiries", value: 0, icon: MessageCircle },
         { label: "Pending Verifications", value: 0, icon: Timer},
@@ -57,14 +72,13 @@ export default function Dashboard(props) {
         <AuthenticatedLayout
             header={
                 <div className="space-y-3 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
                     <div className="flex gap-5">
-                        {stats.map((s) => (
+                        {card.map((c) => (
                             <StatCard
-                                key={s.label}
-                                label={s.label}
-                                value={s.value}
-                                Icon={s.icon}
+                                key={c.label}
+                                label={c.label}
+                                value={c.value}
+                                Icon={c.icon}
                             />
                         ))}
                     </div>
@@ -73,7 +87,7 @@ export default function Dashboard(props) {
             >
             <Head title="Dashboard" />
 
-            <div className="py-10">
+            <div className="py-5">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden shadow-sm sm:rounded-lg flex justify-between gap-5">
                         {/* recent inquiries */}
@@ -93,13 +107,13 @@ export default function Dashboard(props) {
                                         {data.map((r, idx) => (
                                         <tr key={idx} className="border-b border-gray-50 last:border-b-0">
                                             <td className="px-5 py-3 text-sm font-medium text-gray-900">
-                                            {r.tenant}
+                                                {r.tenant}
                                             </td>
                                             <td className="px-5 py-3 text-sm text-gray-600">
-                                            {r.property}
+                                                {r.property}
                                             </td>
                                             <td className="px-5 py-3 text-right">
-                                            <StatusBadge status={r.status} />
+                                                <StatusBadge status={r.status} />
                                             </td>
                                         </tr>
                                         ))}
