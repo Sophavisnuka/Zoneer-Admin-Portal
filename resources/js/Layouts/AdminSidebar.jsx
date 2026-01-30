@@ -1,5 +1,4 @@
 import React from "react";
-import NavLink from '@/Components/NavLink';
 import {
     LayoutGrid,
     Users,
@@ -12,52 +11,53 @@ import {
     Bell,
     Settings,
 } from "lucide-react";
+import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
+import { Link } from '@inertiajs/react';
+import NavLink from "@/Components/NavLink";
 
 const NAV = [
     {
         label: null,
-        items: [{ key: "dashboard", name: "Dashboard", icon: LayoutGrid }],
+        items: [
+            { key: "dashboard", name: "Dashboard", icon: LayoutGrid, href: route("dashboard"),routeName: "dashboard",}],
     },
     {
         label: "USER MANAGEMENT",
         items: [
-        { key: "landlords", name: "Landlords", icon: Users },
-        { key: "tenants", name: "Tenants", icon: User },
-        { key: "visitors", name: "Visitors", icon: Eye },
+            { key: "landlords", name: "Landlords", icon: Users, href: route("landlord"), routeName: "landlord"},
+            { key: "tenants", name: "Tenants", icon: User, href: route('tenant'), routeName: "tenant" },
+            { key: "visitors", name: "Visitors", icon: Eye },
         ],
     },
     {
         label: "PROPERTY MANAGEMENT",
         items: [
-        { key: "properties", name: "Properties", icon: Home },
-        { key: "amenities", name: "Amenities", icon: Star },
+            { key: "properties", name: "Properties", icon: Home },
+            { key: "amenities", name: "Amenities", icon: Star },
         ],
     },
     {
         label: "OPERATIONS",
         items: [
-        { key: "inquiries", name: "Inquiries", icon: HelpCircle },
-        { key: "verifications", name: "Verifications", icon: BadgeCheck },
-        { key: "notifications", name: "Notifications", icon: Bell },
+            { key: "inquiries", name: "Inquiries", icon: HelpCircle },
+            { key: "verifications", name: "Verifications", icon: BadgeCheck },
+            { key: "notifications", name: "Notifications", icon: Bell },
         ],
     },
     {
         label: "SYSTEM",
-        items: [{ key: "settings", name: "Settings", icon: Settings }],
+        items: [{ key: "settings", name: "Settings", icon: Settings, href: route("profile.edit"), routeName: "profile.edit" }],
     },
 ];
 
-export default function AdminSidebar({
-    activeKey = "dashboard",
-    onNavigate,
-}) {
+export default function AdminSidebar() {
     return (
-        <aside className="w-[260px] h-screen bg-white border-r border-gray-200 flex flex-col">
+        <aside className="sticky top-0 w-[260px] h-screen bg-white border-r border-gray-200 flex flex-col">
             {/* Brand */}
             <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                <div className="text-lg font-extrabold tracking-tight">
+                <NavLink href="/"  className="text-lg font-extrabold tracking-tight">
                     <img src="/images/Zoneer-full.png" alt="" className="h-10 w-full"/>
-                </div>
+                </NavLink>
             </div>
 
             {/* Nav */}
@@ -69,36 +69,35 @@ export default function AdminSidebar({
                         {group.label}
                     </div>
                     )}
-
                     <div className="space-y-1">
                     {group.items.map((item) => {
                         const Icon = item.icon;
-                        const isActive = activeKey === item.key;
-
-                        return (
-                            <button
-                                key={item.key}
-                                type="button"
-                                onClick={() => onNavigate?.(item.key)}
-                                className={[
-                                    "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-                                    isActive
-                                        ? "bg-red-50 text-red-600"
-                                        : "text-gray-700 hover:bg-gray-50",
+                        const isActive = item.routeName
+                            ? route().current(item.routeName)
+                            : false;
+                            return (
+                                <Link
+                                    key={item.key}
+                                    href={item.href}
+                                    className={[
+                                        "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                                        isActive
+                                            ? "bg-red-50 text-red-600"
+                                            : "text-gray-700 hover:bg-gray-50",
                                     ].join(" ")}
-                            >
-                                <Icon
-                                className={[
-                                    "h-4 w-4",
-                                    isActive ? "text-red-500" : "text-gray-500",
-                                ].join(" ")}
-                                />
+                                >
+                                    <Icon
+                                        className={[
+                                            "h-4 w-4",
+                                            isActive ? "text-red-500" : "text-gray-500",
+                                        ].join(" ")}
+                                    />
                                     <span className={isActive ? "font-semibold" : "font-medium"}>
                                         {item.name}
                                     </span>
-                            </button>
-                        );
-                    })}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
                 ))}

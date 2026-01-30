@@ -50,5 +50,7 @@ php artisan config:cache
 # Run the queue worker:
 php artisan queue:work
 
-
+# Create model layer
 php artisan make:model YourModelName -mcr
+# Create controller
+php artisan make:controller ControllerName
