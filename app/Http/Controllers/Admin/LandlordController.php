@@ -11,10 +11,12 @@ class LandlordController extends Controller
 {
     public function index () {
         $landlords = AppUser::query()
-            ->where('role', 'landlord')
-            ->select('id','fullname', 'phone_number', 'email', 'created_at')
+            ->select('id','fullname', 'phone_number', 'email', 'verify_status', 'created_at')
+            ->where('role', 'landlord') // Where after select for better performance
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+        
         return Inertia::render('Landlord', [
             'landlords' => $landlords,
         ]);

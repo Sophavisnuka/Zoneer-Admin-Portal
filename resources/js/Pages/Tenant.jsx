@@ -1,21 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, usePage, Link, router } from "@inertiajs/react";
-import { useEffect } from "react";
+import { Head, usePage, Link } from "@inertiajs/react";
+import RefreshButton from "@/Components/RefreshButton";
 
 export default function Tenant() {
     const { tenants } = usePage().props; // plural
     const rows = tenants?.data ?? [];
-    const refreshStats = () => {
-        router.reload({
-            only: ["tenants"],
-            preserveScroll: true,
-            preserveStat: true,
-        });
-    };
-    useEffect(() => {
-        const interval = setInterval(refreshStats, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <AuthenticatedLayout>
@@ -23,10 +12,12 @@ export default function Tenant() {
 
             <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
-                    <h1 className="text-xl font-bold">Tenants</h1>
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-xl font-bold">Tenants</h1>
+                        <RefreshButton only={['tenants']} />
+                    </div>
                     <div className="text-sm text-gray-500">
-                        {/* {Tenants?.total ?? Tenants?.data?.length ?? 0} total */}
-                        0 total
+                        {tenants?.total ?? tenants?.data?.length ?? 0} total
                     </div>
                 </div>
 
@@ -38,6 +29,7 @@ export default function Tenant() {
                                 <th className="px-4 py-3">Email</th>
                                 <th className="px-4 py-3">Phone Number</th>
                                 <th className="px-4 py-3">Joined</th>
+                                <th className="px-4 py-3">Inquiries</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -49,11 +41,12 @@ export default function Tenant() {
                                     <td className="px-4 py-3">
                                         {u.created_at ? new Date(u.created_at).toLocaleDateString() : "-"}
                                     </td>
+                                    <td className="px-4 py-3">-</td>
                                 </tr>
                             ))}
                             {rows.length == 0 && (
                                 <tr>
-                                    <td colSpan={4} className="py-10">
+                                    <td colSpan={5} className="py-10">
                                         <div className="flex items-center justify-center text-gray-500">
                                             No Tenants found.
                                         </div>

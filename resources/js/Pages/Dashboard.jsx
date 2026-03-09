@@ -1,9 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, usePage, router } from "@inertiajs/react";
 import StatCard from "@/Components/Dashboard/StatCard";
-import { Users, User, House, MessageCircle, Timer } from "lucide-react";
-import { useEffect } from "react";
-import { router, usePage } from "@inertiajs/react";
+import { Users, User, House, MessageCircle, Timer, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 
 
 function StatusBadge({ status }) {
@@ -29,21 +28,30 @@ function StatusBadge({ status }) {
 
 export default function Dashboard() {
     const { stats } = usePage().props;
-    const refreshStats = () => {
-        router.reload({
-            only: ["stats"],
-            preserveScroll: true,
-            preserveState: true,
-        });
-    };
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Auto-refresh every 30 seconds instead of 5 (less load on database)
     useEffect(() => {
-        const interval = setInterval(refreshStats, 5000);
+        const interval = setInterval(() => {
+            router.reload({ only: ['stats'], preserveScroll: true, preserveState: true });
+        }, 30000); // 30 seconds
         return () => clearInterval(interval);
     }, []);
+
+    const handleManualRefresh = () => {
+        setIsRefreshing(true);
+        router.reload({
+            only: ['stats'],
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => setIsRefreshing(false),
+        });
+    };
+
     const card = [
         { label: "Total Landlords", value: stats?.landlords ?? 0, icon: Users },
         { label: "Total Tenants", value: stats?.tenants ?? 0, icon: User },
-        { label: "Total Properties", value: 0, icon: House },
+        { label: "Total Properties", value: stats?.properties, icon: House },
         { label: "New Inquiries", value: 0, icon: MessageCircle },
         { label: "Pending Verifications", value: 0, icon: Timer},
     ];
@@ -72,6 +80,17 @@ export default function Dashboard() {
         <AuthenticatedLayout
             header={
                 <div className="space-y-3 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center mb-3">
+                        <h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>
+                        <button
+                            onClick={handleManualRefresh}
+                            disabled={isRefreshing}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </button>
+                    </div>
                     <div className="flex gap-5">
                         {card.map((c) => (
                             <StatCard

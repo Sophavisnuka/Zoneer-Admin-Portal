@@ -11,7 +11,6 @@ import {
     Bell,
     Settings,
 } from "lucide-react";
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from '@inertiajs/react';
 import NavLink from "@/Components/NavLink";
 
@@ -32,7 +31,7 @@ const NAV = [
     {
         label: "PROPERTY MANAGEMENT",
         items: [
-            { key: "properties", name: "Properties", icon: Home },
+            { key: "properties", name: "Properties", icon: Home, href: route("property"), routeName: "property" },
             { key: "amenities", name: "Amenities", icon: Star },
         ],
     },
