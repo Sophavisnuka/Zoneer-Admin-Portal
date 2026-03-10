@@ -3,6 +3,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminSidebar from './AdminSidebar';
+import { Toaster } from 'sonner';
 
 export default function AuthenticatedLayout({ header, children, title }) {
     const user = usePage().props.auth.user;
@@ -164,6 +165,7 @@ export default function AuthenticatedLayout({ header, children, title }) {
 
                 <main>{children}</main>
             </div>
+            <Toaster position='top-right' richColors />
         </div>
     );
 }

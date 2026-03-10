@@ -45,6 +45,8 @@ class PropertyController extends Controller
             'location_url' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string'],
 
+            'thumbnail_url' => ['required', 'string'],
+
             'property_status' => ['required', 'in:rented,available'],
             'landlord_id' => ['required', 'uuid'],
 

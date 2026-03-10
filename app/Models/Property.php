@@ -26,6 +26,7 @@ class Property extends Model
         'property_features',
         'badge_options',
         'verify_status',
+        'thumbnail_url',
         'property_status',
         'landlord_id',
         'verified_by_admin',
