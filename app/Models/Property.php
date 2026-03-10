@@ -38,4 +38,9 @@ class Property extends Model
         'price' => 'decimal:2',
         'square_area' => 'decimal:2',
     ];
+
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
 }

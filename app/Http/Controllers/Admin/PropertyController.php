@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Property;
 use App\Models\AppUser;
+use App\Models\Image;
 use Inertia\Inertia;
 
 class PropertyController extends Controller
@@ -35,7 +36,7 @@ class PropertyController extends Controller
     }
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'price' => ['required', 'numeric', 'min:0'],
             'bedroom' => ['required', 'integer', 'min:0'],
             'bathroom' => ['required', 'integer', 'min:0'],
@@ -53,12 +54,25 @@ class PropertyController extends Controller
             'security_features' => ['nullable', 'array'],
             'property_features' => ['nullable', 'array'],
             'badge_options' => ['nullable', 'array'],
+            
+            'images' => ['nullable', 'array'],
+            'images.*' => ['string', 'max:500'],
         ]);
 
-        $data['verify_status'] = 'default';
-        $data['verified_by_admin'] = null;
+        $validated['verify_status'] = 'default';
+        $validated['verified_by_admin'] = null;
 
-        Property::create($data);
+        $property = Property::create($validated);
+
+        // Create image records
+        if (!empty($validated['images'])) {
+            foreach ($validated['images'] as $imageUrl) {
+                Image::create([
+                    'property_id' => $property->id,
+                    'url' => $imageUrl,
+                ]);
+            }
+        }
 
         return redirect()
             ->route('property')

@@ -1,9 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useDropzone } from "react-dropzone";
 
 export default function PropertyCreate() {
   const { landlords } = usePage().props;
@@ -30,6 +31,22 @@ export default function PropertyCreate() {
     badge_options: [],
   });
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'image/*': [] },
+    maxFiles: 1,
+    onDrop: (acceptedFiles) => {
+      setThumbnailFile(acceptedFiles[0]);
+    }
+  });
+
+  const { getRootProps: getRootPropsMultiple, getInputProps: getInputPropsMultiple, isDragActive: isDragActiveMultiple } = useDropzone({
+    accept: { 'image/*': [] },
+    multiple: true,
+    onDrop: (acceptedFiles) => {
+      setAdditionalFiles(acceptedFiles);
+    }
+  });
+
   const uploadImage = async (file, path) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
@@ -44,31 +61,36 @@ export default function PropertyCreate() {
     return publicUrl;
   }
 
+  const removeImage = (indexToRemove) => {
+    setAdditionalFiles(additionalFiles.filter((_, index) => index !== indexToRemove));
+  }
+
   const submit = async (e) => {
     e.preventDefault();
     setUploading(true);
 
     try {
+      toast.loading('Uploading images...', { id: 'upload' });
+      
       let thumbnailUrl = null;
       if (thumbnailFile) {
         thumbnailUrl = await uploadImage(thumbnailFile, 'thumbnails');
         setData("thumbnail_url", thumbnailUrl);
       }
 
-      // const imageUrls = [];
-      // for (const file of additionalFiles) {
-      //   const url = await uploadImage(file, 'properties');
-      //   imageUrls.push(url);
-      // }
-
-      console.log(data);
+      const imageUrls = [];
+      for (const file of additionalFiles) {
+        const url = await uploadImage(file, 'properties');
+        imageUrls.push(url);
+      }
 
       toast.loading('Saving property...', { id: 'upload' });
 
       post(route("property.store"), {
         ...data,
+        thumbnail_url: thumbnailUrl,
+        images: imageUrls,
       }, {
-        // images: imageUrls,
         onSuccess: () => {
           toast.success('Property uploaded successfully!', { id: 'upload' });
           setUploading(false);
@@ -85,6 +107,12 @@ export default function PropertyCreate() {
       setUploading(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      additionalFiles.forEach(file => URL.revokeObjectURL(file.preview));
+    };
+  }, [additionalFiles]);
 
   return (
     <AuthenticatedLayout>
@@ -226,22 +254,52 @@ export default function PropertyCreate() {
           </form>
 
           <div>
-            <div>
-              <label htmlFor="block text-sm font-medium mb-1">Property's Thumbnail</label>
-              <input type="file"
-              accept="image/*"
-              onChange={(e) => setThumbnailFile(e.target.files[0])}
-              className="w-full rounded-lg border px-3 py-2 text-sm" />
+            <label htmlFor="block text-sm font-medium mb-1">Property's Thumbnail</label>
+            <div {...getRootProps()} className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-red-500" >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                <p>Drop the image here...</p>
+              ) : (
+                <p>Drag & drop thumbnail, or click to select</p>
+              )}
+              {thumbnailFile && (
+                <div className="relative w-64">
+                  <img src={URL.createObjectURL(thumbnailFile)} className="" alt="Preview" />
+                  <button onClick={(e) => {
+                          e.stopPropagation();
+                          setThumbnailFile(null);
+                        }} className="absolute -top-2 -right-2 bg-black bg-opacity-70 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-opacity-100 cursor-pointer transition-all">
+                          x
+                        </button>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label htmlFor="block text-sm font-medium mb-1">Property Images</label>
-              <input type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => setAdditionalFiles(Array.from(e.target.files))}
-              className="w-full rounded-lg border px-3 py-2 text-sm" />
-              {errors.images && <div className="mt-1 text-sm text-red-600">{errors.images}</div>}
+            <label htmlFor="block text-sm font-medium mb-1">Property's Images</label>
+            <div {...getRootPropsMultiple()} className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-red-500" >
+              <input {...getInputPropsMultiple()} />
+              {isDragActive ? (
+                <p>Drop the images here...</p>
+              ) : (
+                <p>Drag & drop images, or click to select</p>
+              )}
+              {
+                additionalFiles.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {additionalFiles.map((file, index) => (
+                      <div key={index} className="relative">
+                        <img src={URL.createObjectURL(file)} className="w-64" alt={`Preview ${index}`} />
+                        <button onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(index);
+                        }} className="absolute -top-2 -right-2 bg-black bg-opacity-70 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-opacity-100 cursor-pointer transition-all">
+                          x
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )
+              }
             </div>
           </div>
         </div>
