@@ -20,14 +20,21 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function() {
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    //landlords
+    
+    // Landlords
     Route::get('/landlords', [LandlordController::class, 'index'])->name('landlord');
-    //property route
+    
+    // Property
     Route::get('/properties', [PropertyController::class, 'index'])->name('property');
     Route::get('/properties/create', [PropertyController::class, 'create'])->name('property.create');
     Route::post('/properties', [PropertyController::class, 'store'])->name('property.store');
-    //tenants
+    Route::get('/properties/{property}/edit', [PropertyController::class, 'edit'])->name('property.edit');
+    Route::patch('/properties/{property}', [PropertyController::class, 'update'])->name('property.update');
+    Route::delete('/properties/{property}', [PropertyController::class, 'destroy'])->name('property.destroy');
+
+    // Tenants
     Route::get('/tenants', [TenantController::class, 'index'])->name('tenant');
 
 });

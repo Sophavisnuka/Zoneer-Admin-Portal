@@ -1,11 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import React from 'react'
-import { Head, Link, usePage } from "@inertiajs/react";
+import { Head, Link, usePage, router } from "@inertiajs/react";
 import PrimaryButton from "@/Components/PrimaryButton";
 import RefreshButton from '@/Components/RefreshButton';
 
 const Property = () => {
-    const { property } = usePage().props; 
+    const { property, filters } = usePage().props; 
+    const activeStatus = filters?.status ?? null;
     const rows = property?.data ?? [];
     return (
         <AuthenticatedLayout>
@@ -22,10 +23,21 @@ const Property = () => {
                 </div>
                 <div className='flex justify-between'>
                     <div className='flex gap-5'>
-                        <div className='border px-5 py-2 bg-red-700 rounded-md text-white'><button>All</button></div>
-                        <div className='border px-5 py-2 bg-white rounded-md text-black'><button>Pending Review</button></div>
-                        <div className='border px-5 py-2 bg-white rounded-md text-black'><button>Approve</button></div>
-                        <div className='border px-5 py-2 bg-white rounded-md text-black'><button>Admin Created</button></div>
+                        {[
+                            { label: "All", value: null },
+                            { label: "Pending", value: 'pending' },
+                            { label: "Verified", value: 'verified' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.value ?? 'all'}
+                                onClick={() => router.get(route('property'), tab.value ? { status: tab.value } : {}, { preserveScroll: true })}
+                                className={`border px-5 py-2 rounded-md ${
+                                activeStatus === tab.value ? 'bg-red-700 text-white' : 'bg-white text-black'
+                            }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
                     <div className='border px-5 py-2 bg-red-700 rounded-md text-white'>
                         <Link
@@ -52,7 +64,9 @@ const Property = () => {
                                     <td className="px-4 py-3">{u.price}</td>
                                     <td className="px-4 py-3">{u.property_status}</td>
                                     <td className="px-4 py-3">
-                                        <PrimaryButton>Edit</PrimaryButton>
+                                        <Link href={route('property.edit', u.id)}>
+                                            <PrimaryButton>Edit</PrimaryButton>
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
